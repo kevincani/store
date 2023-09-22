@@ -9,6 +9,9 @@ class InventaryRepository extends BaseRepository
 {
     public const MODEL = Inventary::class;
 
+    public function findInventary($id){
+        return Inventary::find($id);
+    }
     public function fullInventary($id){
         return Inventary::with('colors', 'categories', 'discounts', 'sizes', 'products')
             ->find($id);

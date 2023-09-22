@@ -10,4 +10,11 @@ class OrderRepository extends BaseRepository
     public function allOrdersWithDetails(){
         return Order::with('orderDetails')->get();
     }
+    public function orderWithDetails($id){
+        return Order::with('orderDetails')->find($id);
+    }
+    public function allUsersOrdersWithDetails(){
+        $user = auth()->user();
+        return Order::where('user_id',$user->id)->with('orderDetails')->get();
+    }
 }

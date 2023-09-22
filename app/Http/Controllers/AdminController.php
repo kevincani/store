@@ -2,8 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Order;
-use App\Models\Inventary;
 use App\Repositories\InventaryRepository;
 use App\Repositories\OrderRepository;
 use Yajra\DataTables\DataTables;
@@ -23,7 +21,6 @@ class AdminController extends Controller
     }
     public function raport(){
         $orders = $this->orderRepository->allOrdersWithDetails(); // Te gjithe porosite
-
         $raport = []; // Array qe do te mbaje te dhenat e datatable
 
         foreach ($orders as $order){
@@ -33,7 +30,7 @@ class AdminController extends Controller
                     $id = $orderDetail->pivot_id; // id e inventarit qe ndodhej produkti i shitur
 
                     $inventary = $this->inventaryRepository->fullInventary($id); //Te dhenat qe ndodhen ne inventar
-
+//                    dd($inventary);
                     // Nqs eshte eshte shitur nje produkt identik rrisim sasine e shitur perndryshe e krijojm ne raport
                     if (isset($raport[$id])){
                         $raport[$id]['quantity'] += $orderDetail->quantity;

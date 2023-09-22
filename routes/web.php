@@ -48,8 +48,10 @@ Route::group(["middleware" => "auth"], function(){
         Route::get('/profile', 'ProfileController@edit')->name('profile.edit');
         Route::patch('/profile', 'ProfileController@update')->name('profile.update');
         Route::delete('/profile', 'ProfileController@destroy')->name('profile.destroy');
-        Route::get('/purchased', 'UsersController@list')->name('user.purchased');
-        Route::get('/refund', 'UsersController@refund')->name('user.refund');
+        Route::get('/order', 'OrderController@index')->name('order.index');
+        Route::get('/order/datatable', 'OrderController@getForDatatable')->name('order.datatable');
+        Route::get('/order/refund{id}', 'OrderController@refund')->name('order.refund');
+
     });
 });
 
