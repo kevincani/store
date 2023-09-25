@@ -106,11 +106,9 @@ class WelcomeController extends Controller
             $product = Product::with(['images', 'colors', 'categories', 'discounts', 'sizes', 'inventary' => function ($query) use ($id) {
                 $query->where('inventary.id', '=', $id);
             }])->find($productData[$index]);
-
             // If the product is found, set the quantity value for the pivot
             if ($product) {
                 $product->inventary[0]->quantity = $quantity;
-
                 $products[] = $product;
             }
         }

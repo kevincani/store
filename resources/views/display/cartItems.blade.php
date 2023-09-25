@@ -18,7 +18,7 @@
                 @endphp
             @endif
 
-            <div class="bg-white p-4 shadow-md">
+            <div class="bg-gray-100 p-4 shadow-md">
                     <img src="{{ asset('storage') . '/' . $product->images[0]->name }}" alt="Product Image" class="w-full mb-4">
                     <h2 class="text-lg font-bold">{{ $product->name }}</h2>
 

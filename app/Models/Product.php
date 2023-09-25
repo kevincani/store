@@ -34,7 +34,7 @@ class Product extends Model
     }
     public function inventary()
     {
-        return $this->hasMany(Inventary::class);
+        return $this->hasMany(Inventary::class,'product_id','id');
     }
 
 }

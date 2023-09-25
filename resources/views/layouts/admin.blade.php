@@ -14,29 +14,10 @@
 
 
 
-{{--        <style>--}}
-{{--        /* Add custom CSS styles */--}}
-{{--        #navbar {--}}
-{{--            background-color: dodgerblue;--}}
-{{--            /* Add any other styles you want */--}}
-{{--        }--}}
 
-{{--        #sidebar {--}}
-{{--            background-color: dodgerblue;--}}
-{{--            /* Add any other styles you want */--}}
-{{--        }--}}
-
-{{--        #content {--}}
-{{--            background-color: deepskyblue; /* Change to your desired light purple color */--}}
-{{--            /* Add any other styles you want */--}}
-{{--        }--}}
-{{--        #logo-sidebar{--}}
-{{--            background-color: deepskyblue;--}}
-{{--        }--}}
-{{--    </style>--}}
 </head>
 <body>
-<nav id="navbar" class="fixed top-0 z-50 w-full bg-white border-b border-gray-200 dark:bg-gray-800 dark:border-gray-700">
+<nav id="navbar" class="fixed top-0 z-50 w-full bg-gray-300  dark:bg-gray-800 dark:border-gray-700">
     <div class="px-3 py-3 lg:px-5 lg:pl-3">
         <div class="flex items-center justify-between">
             <div class="flex items-center justify-start">
@@ -98,8 +79,8 @@
         </div>
     </div>
 </nav>
-<aside id="sidebar" class="fixed top-0 left-0 z-40 w-64 h-screen pt-20 transition-transform -translate-x-full bg-white border-r border-gray-200 sm:translate-x-0 dark:bg-gray-800 dark:border-gray-700" aria-label="Sidebar">
-    <div id="sidebar" class="h-full px-3 pb-4 overflow-y-auto bg-white dark:bg-gray-800">
+<aside id="sidebar" class="fixed top-0 left-0 z-40 w-64 h-screen pt-20 transition-transform -translate-x-full bg-gray-300  sm:translate-x-0 dark:bg-gray-800 dark:border-gray-700" aria-label="Sidebar">
+    <div id="sidebar" class="h-full px-3 pb-4 overflow-y-auto bg-gray-300 dark:bg-gray-800">
         <ul class="space-y-2 font-medium">
 
 
@@ -189,8 +170,6 @@
 </aside>
 <div id="logo-sidebar" class="p-4 sm:ml-64">
     <div id="content" class="p-4  border-gray-200  rounded-lg dark:border-gray-700 mt-14">
-        {{--        <div class="grid grid-cols-3 gap-4 mb-4">--}}
-        {{--        </div>--}}
         {{ $slot }}
     </div>
 </div>

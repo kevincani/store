@@ -29,9 +29,9 @@
 {{--                @endphp--}}
             @endif
 
-            <div class="bg-white p-4 shadow-md">
+            <div class="bg-gray-100 p-4 shadow-md">
                 <a href="{{ route('products.details', $product->id) }}" class="text-blue-500 hover:underline">
-                <img src="{{ asset('storage') . '/' . $product->images[0]->name }}" alt="Product Image" class="h-auto max-w-lg rounded-lg" >
+                <img src="{{ asset('storage') . '/' . $product->images[0]->name }}" alt="Product Image" class="h-auto max-w-lg rounded-lg" width="200" height="500">
                 <h2 class="text-lg font-bold">{{ $product->name }}</h2>
                     <h3> {{$product->desc}}</h3>
 {{--                <div class="flex justify-between items-center">--}}
