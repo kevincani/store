@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\Order;
 use App\Models\OrderDetail;
 use App\Models\Inventary;
-use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Stripe\Checkout\Session;
@@ -17,14 +16,15 @@ class StripeController extends Controller
 {
     public function session(Request $request){
         Stripe::setApiKey(config('stripe.sk'));
-
+        //Array ku do fusim te dhenat dhe e vendosimne Stripe
         $productItems = [];
-
+        //Array ku eshte inventary me te gjitha relations e tij
         $inventaries = json_decode(json_encode($request->input('inventaries')));
 
         $user = auth()->user();
 
-        $totalPrice = 0;
+        $totalPrice = 0; //Inicializojme cmimin ne fiilim me 0
+        //E krijome nje porosi ne databaze pa futur te dhenat e stripe
         $order = Order::create([
             'user_id' => $user->id,
             'payment_intent' => '',
@@ -32,22 +32,28 @@ class StripeController extends Controller
             'session_id' => ''
         ]);
 
+        // Nje porosi mund te kete disa produkte, bejme loop
         foreach ($inventaries as $inventary) {
-            $productName = $inventary->products->name;
+            $productName = $inventary->products->name; //Emri
+            //Vendosim cmimin ne varesi te uljes
             $discount = $inventary->discounts->discount_percent / 100;
             $productPrice = $inventary->price - ($inventary->price * $discount);
-            $productQuantity = $inventary->quantity;
+            $productQuantity = $inventary->quantity; //Sasia
+            //Rrisim cmimin total me cmimin e cdo produkti * sasine
             $totalPrice += $productPrice * $productQuantity;
 
+            //Per cdo produkt qe ka orderi krijojme nje orderDetail qe mban karakteristikat e produkti dhe Id e orderit
             OrderDetail::create([
                 'order_id' => $order->id,
                 'pivot_id' => $inventary->id,
                 'quantity' => $inventary->quantity,
             ]);
 
+            // I shtojme cmimit '00' sepse Stripe mer ne cent dhe jo dollar
             $two0 = "00";
             $unit_amount = "$productPrice$two0";
 
+            //Mbushim vektorin qe do mer Stripe
             $productItems[] = [
                 'price_data' => [
                     'product_data' => [
@@ -60,10 +66,11 @@ class StripeController extends Controller
             ];
 
         }
-
+        // Llogarisim kohen qe deri 30 minuta me vone te skadoje sesioni nqs nuk perfundon
         $twoMinutesLater = Carbon::now()->addMinutes(30);
         $unixTimestamp = $twoMinutesLater->timestamp;
 
+        //Krijojme sessionin e Stripe
         $checkoutSession = Session::create([
             'line_items'            => [$productItems],
             'mode'                  => 'payment',
@@ -73,14 +80,16 @@ class StripeController extends Controller
                 'user_id' => $user->id
             ],
             'customer_email' => $user->email,
+            //Ne rast suksesi kalojme order dhe id e session ne routerin e suksesit
             'success_url' => route('checkout.success', ['order' => $order->id]) . "?session_id={CHECKOUT_SESSION_ID}" ,
             'cancel_url'  => route('checkout.cancel', ['order' => $order->id]),
         ]);
-
+        //Updatojme orderin me te id e session dhe cmimin total
         $order->update([
             'total_price' => $totalPrice,
             'session_id' => $checkoutSession->id,
         ]);
+        //Kthejme Url qe behet blerja me Stripe
         return response()->json(['checkout_url' => $checkoutSession->url]);
 
     }
@@ -89,15 +98,18 @@ class StripeController extends Controller
     public function success(Request $request,Order $order)
     {
         Stripe::setApiKey(config('stripe.sk'));
-
+        //Id e sessionit
         $checkoutSessionId = $request->get('session_id');
+        //Marim te dhenat e sesionit me ane te Id
         $session = Session::retrieve($checkoutSessionId);
+        // Updatojme orderin me payment_intent
         $order->update([
             'payment_intent' => $session->payment_intent,
         ]);
-
+        //Marim te gjitha tabelat orderDetail te orderit aktual sepse na duhen Id e inventarit te secilit produkt te sapo shitur
         $orderDetails = OrderDetail::where('order_id', $order->id)->get();
 
+        //Ulim sasine ne secilin ineventar te produkteve te shitur
         foreach ($orderDetails as $orderDetail) {
             $inventary = Inventary::find($orderDetail->pivot_id);
             $newQuantity = $inventary->quantity - $orderDetail->quantity;
@@ -111,6 +123,7 @@ class StripeController extends Controller
 
     public function cancel(Request $request,Order $order)
     {
+        //Ne rast se klienti heq dore fshijme orderin qe patem krijuar
         $order->delete();
         return " Canceled";
     }
@@ -139,7 +152,7 @@ class StripeController extends Controller
             exit();
         }
 
-// Handle the event
+// Ne rast se sesioni expire fshijme orderin qe kemi krijuar
         switch ($event->type) {
             case 'checkout.session.expired':
                 $seesion_id = $event->data->object->id;

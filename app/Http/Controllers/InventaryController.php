@@ -10,8 +10,12 @@ use App\Models\Discount;
 use App\Models\Inventary;
 use App\Models\Product;
 use App\Models\Size;
+use App\Repositories\CategoryRepository;
+use App\Repositories\ColorRepository;
+use App\Repositories\DiscountRepository;
 use App\Repositories\InventaryRepository;
-use Illuminate\Http\Request;
+use App\Repositories\ProductRepository;
+use App\Repositories\SizeRepository;
 use Yajra\DataTables\DataTables;
 
 class InventaryController extends Controller
@@ -20,8 +24,20 @@ class InventaryController extends Controller
      * Deklarimi repozitorit qe do te perdoret.
      */
     protected InventaryRepository $inventaryRepository;
-    public function __construct(InventaryRepository $inventaryRepository){
+    protected CategoryRepository $categoryRepository;
+    protected ProductRepository $productRepository;
+    protected SizeRepository $sizeRepository;
+    protected ColorRepository $colorRepository;
+    protected DiscountRepository $discountRepository;
+    public function __construct(InventaryRepository $inventaryRepository,ColorRepository $colorRepository,ProductRepository $productRepository,
+    SizeRepository $sizeRepository,CategoryRepository $categoryRepository,DiscountRepository $discountRepository)
+    {
         $this->inventaryRepository = $inventaryRepository;
+        $this->categoryRepository = $categoryRepository;
+        $this->productRepository = $productRepository;
+        $this->sizeRepository = $sizeRepository;
+        $this->colorRepository = $colorRepository;
+        $this->discountRepository = $discountRepository;
     }
 
 
@@ -30,20 +46,22 @@ class InventaryController extends Controller
      */
     public function index()
     {
-        $products = Product::all();
-        $sizes = Size::all();
-        $colors = Color::all();
-        $categories = Category::all();
-        $discounts = Discount::all();
+        // Te gjitha karakteristikat per ti futur ne inventar
+        $products = $this->productRepository->getAll();
+        $sizes = $this->sizeRepository->getAll();
+        $colors = $this->colorRepository->getAll();
+        $categories = $this->categoryRepository->getAll();
+        $discounts = $this->discountRepository->getAll();
 
         return view('inventary.index' , compact('products','sizes', 'colors', 'categories', 'discounts'));
     }
 
     public function getForDatatable(){
-
-        $inventary = $this->inventaryRepository->inventaryDatatable()->get();
+        // Shfaqim ne datatable produktin me te gjitha karakteristikat
+        $inventary = $this->inventaryRepository->query()->with('colors', 'categories', 'discounts', 'sizes','products')->get();
 
         return DataTables::of($inventary)
+            //Shtojme butonat edit dhe delete
             ->addColumn('action', function ($inventary) {
                 $button = '<button type="button" id="'.$inventary->id.'" name="edit"
                            class="text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm px-5 py-2.5 text-center mr-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">

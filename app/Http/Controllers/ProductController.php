@@ -40,9 +40,11 @@ class ProductController extends Controller
 
     public function getForDatatable()
     {
-        $products = $this->productRepository->allProductsWithImages();
+        //Shfaqim ne datatable produktin
+        $products = $this->productRepository->query()->with('images');
 
         return DataTables::of($products)->addIndexColumn()
+            //Shtojme butonat edit dhe delete
             ->addColumn('action', function ($products) {
                 $button = '<button type="button" id="'.$products->id.'" name="edit"
                             class="text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm px-5 py-2.5 text-center mr-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
@@ -73,8 +75,11 @@ class ProductController extends Controller
      */
     public function store(StoreProductRequest $productRequest,StoreImageRequest $imageRequest)
     {
+        //Te dhenat e produktit te validuara
         $dataProduct = $productRequest->validated();
+        //Imazhi i validuar
         $dataImage = $imageRequest->validated();
+        //Ruhen produkti dhe imazhi me ane te repository
         $this->productRepository->store($dataProduct,$dataImage);
 
         return response()->json(['message' => 'Product created successfully']);

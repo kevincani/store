@@ -33,8 +33,6 @@ class ProductRepository extends BaseRepository
         }
     }
 
-    public function allProductsWithImages(){
-        return Product::with('images');
-    }
+
 
 }
