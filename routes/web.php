@@ -3,24 +3,17 @@
 use Illuminate\Support\Facades\Route;
 
 
-
-Route::get('/', 'WelcomeController@view')->name('welcome');
-Route::get('/filtered', 'WelcomeController@filterCategory')->name('products.filterCategory');
-Route::get('/cart', 'WelcomeController@cart')->name('products.cart');
-Route::post('/cart', 'WelcomeController@cartDisplay')->name('products.cartDisplay');
-Route::post('/session', 'StripeController@session')->name('checkout.session');
-Route::get('/success/{order}', 'StripeController@success')->name('checkout.success');
-Route::get('/cancel/{order}', 'StripeController@cancel')->name('checkout.cancel');
-Route::post('/webhook', 'StripeController@handleWebhook')->name('checkout.webhook');
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
-
+Route::group(['prefix' => '/', 'as'=> 'home.'], function (){
+    Route::get('', 'HomeController@view')->name('index');
+    Route::get('/filter', 'HomeController@filter')->name('filter');
+});
 
 Route::group(["middleware" => "auth"], function(){
     Route::middleware(['role:admin'])->group(function () {
-        Route::get('/admin', 'AdminController@view')->name('admin.index');
-        Route::get('/raport','AdminController@raport')->name('admin.raport');
+        Route::group(['prefix' => 'admin', 'as'=> 'admin.'], function (){
+            Route::get('/', 'AdminController@view')->name('index');
+            Route::get('/raport','AdminController@raport')->name('raport');
+        });
 
         Route::group(['prefix' => 'user', 'as'=> 'user.'], function (){
             Route::get('user', 'UserController@getForDatatable')->name('datatable');
@@ -38,26 +31,38 @@ Route::group(["middleware" => "auth"], function(){
             Route::get('inventary', 'InventaryController@getForDatatable')->name('datatable');
         });
         Route::resource('inventary', 'InventaryController');
-
     });
 
-
     Route::group([], function () {
-        Route::get('/products/{id}', 'WelcomeController@viewDetails')->name('products.details');
-        Route::post('/products/{id}', 'WelcomeController@checkInventary')->name('products.checkInventary');
-        Route::get('/profile', 'ProfileController@edit')->name('profile.edit');
-        Route::patch('/profile', 'ProfileController@update')->name('profile.update');
-        Route::delete('/profile', 'ProfileController@destroy')->name('profile.destroy');
-        Route::get('/order', 'OrderController@index')->name('order.index');
-        Route::get('/order/datatable', 'OrderController@getForDatatable')->name('order.datatable');
-        Route::get('/order/refund{id}', 'OrderController@refund')->name('order.refund');
+        Route::group(['prefix' => 'products', 'as'=> 'home.'], function (){
+            Route::get('{id}', 'HomeController@viewDetails')->name('details');
+            Route::post('{id}', 'HomeController@checkInventary')->name('checkInventary');
+        });
+        Route::group(['prefix' => 'cart', 'as'=> 'cart.'], function (){
+            Route::get('', 'CartController@view')->name('view');
+            Route::post('', 'CartController@show')->name('show');
+        });
+        Route::group(['prefix' => '/profile', 'as'=> 'profile.'], function (){
+            Route::get('', 'ProfileController@edit')->name('edit');
+            Route::patch('', 'ProfileController@update')->name('update');
+            Route::delete('', 'ProfileController@destroy')->name('destroy');
+        });
+        Route::group(['prefix' => 'order', 'as'=> 'order.'], function (){
+            Route::get('', 'OrderController@index')->name('index');
+            Route::get('datatable', 'OrderController@getForDatatable')->name('datatable');
+            Route::get('refund{id}', 'OrderController@refund')->name('refund');
+        });
+        Route::group(['prefix' => '/', 'as'=> 'checkout.'], function (){
+            Route::post('session', 'StripeController@session')->name('session');
+            Route::get('success/{order}', 'StripeController@success')->name('success');
+            Route::get('cancel/{order}', 'StripeController@cancel')->name('cancel');
+            Route::post('webhook', 'StripeController@handleWebhook')->name('webhook');
+        });
+
 
     });
 });
 
-//Route::group(['prefix' => 'test', 'as'=> 'test.'], function (){
-//    Route::post('user', 'TestController@getForDatatable')->name('datatable');
-//});
-//Route::resource('test', 'TestController');
+
 
 require __DIR__.'/auth.php';

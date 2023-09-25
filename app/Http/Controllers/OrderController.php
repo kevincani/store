@@ -7,6 +7,7 @@ use App\Repositories\OrderRepository;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Stripe\Refund;
+use Stripe\Stripe;
 use Yajra\DataTables\DataTables;
 
 class OrderController extends Controller
@@ -24,7 +25,9 @@ class OrderController extends Controller
     }
 
     public function getForDatatable(){
-        $orders = $this->orderRepository->allUsersOrdersWithDetails(); // Te gjithe porosite e userit te loguar
+        // Te gjithe porosite e userit te loguar
+        $user = auth()->user();
+        $orders = $this->orderRepository->query()->where('user_id',$user->id)->with('orderDetails')->get();
 
         //cdo detaj te produkteve te cdo orderi i kalojme ne array-n order
         foreach ($orders as $order){
@@ -58,7 +61,10 @@ class OrderController extends Controller
     }
 
     public function refund($id){
-        $order = $this->orderRepository->orderWithDetails($id); // Orderi dhe detajet per userin qe eshe loguar
+        Stripe::setApiKey(config('stripe.sk'));
+
+        // Orderi dhe detajet per userin qe eshte loguar
+        $order = $this->orderRepository->query()->with('orderDetails')->findOrFail($id);
 
         // Nqs i ka bere refund me perpara e nderpresim dhe i kthejme pergjigje
         if ($order->is_refunded) {
@@ -81,9 +87,9 @@ class OrderController extends Controller
 
         //Rrisim quantity ne inventar te produktit qe i beme refund
         foreach ($order->orderDetails as $orderDetail){
-            $inventary = $this->inventaryRepository->findInventary($orderDetail->pivot_id);
+            $inventary = $this->inventaryRepository->find($orderDetail->pivot_id);
             $newQuantity = $inventary->quantity + $orderDetail->quantity;
-            $this->inventaryRepository->update($inventary,$newQuantity);
+            $this->inventaryRepository->update($inventary,['quantity'=>$newQuantity]);
         }
 
         return response()->json(['message' => "The order is refunded successfully"], 200);

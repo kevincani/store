@@ -20,4 +20,6 @@ class InventaryRepository extends BaseRepository
     {
         return Inventary::with('colors', 'categories', 'discounts', 'sizes','products');
     }
+
+
 }

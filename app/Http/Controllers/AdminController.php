@@ -20,8 +20,11 @@ class AdminController extends Controller
         return view('admin.index');
     }
     public function raport(){
-        $orders = $this->orderRepository->allOrdersWithDetails(); // Te gjithe porosite
-        $raport = []; // Array qe do te mbaje te dhenat e datatable
+        // Te gjithe porosite
+        $orders = $this->orderRepository->query()->with('orderDetails')->get();
+
+        // Array qe do te mbaje te dhenat e datatable
+        $raport = [];
 
         foreach ($orders as $order){
             if (!$order->is_refunded){
@@ -30,7 +33,7 @@ class AdminController extends Controller
                     $id = $orderDetail->pivot_id; // id e inventarit qe ndodhej produkti i shitur
 
                     $inventary = $this->inventaryRepository->fullInventary($id); //Te dhenat qe ndodhen ne inventar
-//                    dd($inventary);
+//
                     // Nqs eshte eshte shitur nje produkt identik rrisim sasine e shitur perndryshe e krijojm ne raport
                     if (isset($raport[$id])){
                         $raport[$id]['quantity'] += $orderDetail->quantity;
