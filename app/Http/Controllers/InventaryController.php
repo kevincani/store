@@ -58,7 +58,7 @@ class InventaryController extends Controller
 
     public function getForDatatable(){
         // Shfaqim ne datatable produktin me te gjitha karakteristikat
-        $inventary = $this->inventaryRepository->query()->with('colors', 'categories', 'discounts', 'sizes','products')->get();
+        $inventary = $this->inventaryRepository->query()->with('colors', 'categories', 'discounts', 'sizes','products')->select('inventary.*');
 
         return DataTables::of($inventary)
             //Shtojme butonat edit dhe delete
@@ -73,6 +73,7 @@ class InventaryController extends Controller
 
                 return $button;
             })
+            ->addIndexColumn()
             ->make();
     }
 

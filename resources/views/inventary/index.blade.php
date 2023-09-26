@@ -17,6 +17,7 @@
         <table id="inventaryDatatable" class="display">
             <thead>
             <tr>
+                <th></th>
                 <th>Name</th>
                 <th>Color</th>
                 <th>Category</th>
@@ -149,6 +150,11 @@
                     serverSide: true,
                     ajax: "{{ route('inventary.datatable') }}",
                     columns: [
+                        {
+                            data: 'DT_RowIndex',
+                            searchable: false,
+                            orderable: false
+                        },
                         {data: 'products.name', name: 'products.name'},
                         {data: 'colors.color', name: 'colors.color'},
                         {data: 'categories.category', name: 'categories.category'},

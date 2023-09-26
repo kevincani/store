@@ -32,9 +32,9 @@ class Product extends Model
     {
         return $this->hasMany(Image::class);
     }
-    public function inventary()
-    {
-        return $this->hasMany(Inventary::class,'product_id','id');
-    }
+//    public function inventary()
+//    {
+//        return $this->hasMany(Inventary::class,'product_id','id');
+//    }
 
 }

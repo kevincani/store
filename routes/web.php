@@ -34,7 +34,7 @@ Route::group(["middleware" => "auth"], function(){
     });
 
     Route::group([], function () {
-        Route::group(['prefix' => 'products', 'as'=> 'home.'], function (){
+        Route::group(['prefix' => 'details', 'as'=> 'home.'], function (){
             Route::get('{id}', 'HomeController@viewDetails')->name('details');
             Route::post('{id}', 'HomeController@checkInventary')->name('checkInventary');
         });

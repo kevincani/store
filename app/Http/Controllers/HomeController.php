@@ -6,6 +6,7 @@ use App\Models\Size;
 use App\Repositories\CategoryRepository;
 use App\Repositories\ColorRepository;
 use App\Repositories\InventaryRepository;
+use App\Repositories\ProductRepository;
 use App\Repositories\SizeRepository;
 use Illuminate\Http\Request;
 
@@ -16,23 +17,26 @@ class HomeController extends Controller
     protected SizeRepository $sizeRepository;
     protected ColorRepository $colorRepository;
     protected InventaryRepository $inventaryRepository;
-    public function __construct(CategoryRepository $categoryRepository,InventaryRepository $inventaryRepository,SizeRepository $sizeRepository,ColorRepository $colorRepository){
+    protected ProductRepository $productRepository;
+    public function __construct(CategoryRepository $categoryRepository,InventaryRepository $inventaryRepository,SizeRepository $sizeRepository
+                                ,ColorRepository $colorRepository,ProductRepository $productRepository)
+    {
         $this->categoryRepository = $categoryRepository;
         $this->inventaryRepository = $inventaryRepository;
         $this->sizeRepository = $sizeRepository;
         $this->colorRepository = $colorRepository;
+        $this->productRepository = $productRepository;
     }
     public function view(){
-        //Inventari se bashku me relations sepse do te shfaqen se bashku si karakteristika te produktit
-        $inventaries = $this->inventaryRepository->query()->with('products.images', 'colors', 'categories', 'discounts', 'sizes', 'products')
-            ->paginate(3);
 
+        // Produktet se bashku me imazhet
+        $products = $this->productRepository->query()->with('images')->paginate(3);
         // Te gjitha masat per filtra
         $sizes = $this->sizeRepository->getAll();
         //Te gjitha kategorite per filtra
         $categories = $this->categoryRepository->getAll();
 
-        return view('home.index', compact('inventaries','sizes','categories'));
+        return view('home.index', compact('products','sizes','categories'));
     }
     public function filter(Request $request){
         // Te gjitha masat behen compact per filtra
@@ -78,7 +82,8 @@ class HomeController extends Controller
         // Qe qe te zgjedhe klienti ngjyren per produktin
         $colors = $this->colorRepository->getAll();
         // Inventari i produktit qe do shfaqim detajet
-        $inventary = $this->inventaryRepository->query()->with('products.images', 'colors', 'categories', 'discounts', 'sizes', 'products')->findOrFail($id);
+        $inventary = $this->inventaryRepository->query()->with('products.images', 'colors', 'categories', 'discounts', 'sizes', 'products')
+            ->where('product_id',$id)->get();
 
         return view('home.details', compact('inventary','colors'));
     }

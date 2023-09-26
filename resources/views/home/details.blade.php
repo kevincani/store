@@ -19,10 +19,10 @@
         <div class="container mx-auto px-6">
             <div class="md:flex md:items-center">
                 <div class="w-full h-64 md:w-1/2 lg:h-96">
-                    <img class="h-full w-full rounded-md object-cover max-w-lg mx-auto" src="{{ asset('storage') . '/' . $inventary->products->images[0]->name }}" alt="Product Image">
+                    <img class="h-full w-full rounded-md object-cover max-w-lg mx-auto" src="{{ asset('storage') . '/' . $inventary[0]->products->images[0]->name }}" alt="Product Image">
                 </div>
                 <div class="w-full max-w-lg mx-auto mt-5 md:ml-8 md:mt-0 md:w-1/2">
-                    <h3 class="text-gray-700 uppercase text-lg">{{ $inventary->products->name }}</h3>
+                    <h3 class="text-gray-700 uppercase text-lg">{{ $inventary[0]->products->name }}</h3>
                     <span id="priceValue" class="text-gray-500 mt-3">$</span>
                     <hr class="my-3">
                     <div class="mt-2">
@@ -42,7 +42,7 @@
                         <label class="text-gray-700 text-sm" for="count">Size:</label>
                         <div class="flex items-center mt-1">
                             <select id="size-dropdown"  class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block px-1 py-1.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
-                                @foreach ($inventary->products->sizes as $index => $size)
+                                @foreach ($inventary[0]->products->sizes as $index => $size)
                                     <option value="{{ $index }}">{{ $size->size }}</option>
                                 @endforeach
                             </select>
@@ -101,8 +101,8 @@
 
 
         // Price value
-        const discounts = @json($inventary->products->discounts);
-        const inventary = @json($inventary->products->inventary);
+        const discounts = @json($inventary[0]->products->discounts);
+        const inventary = @json($inventary);
         var newPrice = parseInt(inventary[selectedSizeIndex].price - (inventary[selectedSizeIndex].price * (discounts[selectedSizeIndex].discount_percent/100)));
         const priceValue = document.getElementById("priceValue");
         const updatePrice = () => {
@@ -170,7 +170,7 @@
 
 
         // Get the product data from the Blade template
-        const product = @json($inventary->products->toArray());
+        const product = @json($inventary[0]->products->toArray());
         // Add event listener to the "Add to Cart" button
         document.getElementById('addToCartButton').addEventListener('click', function() {
 
@@ -178,13 +178,14 @@
 
             var quantity = parseInt(document.getElementById('quantityValue').textContent);
 
-            const sizes = @json($inventary->products->sizes);
+            const sizes = @json($inventary[0]->products->sizes);
             var size = sizes[selectedSizeIndex].size;
 
             var id = product.id;
-
+            var url = "{{ route('home.checkInventary', '::inventary') }}"
+            url = url.replace('::inventary',inventary[selectedSizeIndex].id);
             $.ajax({
-                url: "{{ route('home.checkInventary', $inventary->products->id) }}",
+                url: url,
                 type: 'POST',
                 headers: {
                     'X-CSRF-TOKEN': '{{ csrf_token() }}'
