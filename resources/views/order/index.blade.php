@@ -8,6 +8,7 @@
         <thead>
         <tr>
             <th>Products</th>
+            <th>Client</th>
             <th>Date</th>
             <th>Total Price</th>
             <th>Status</th>
@@ -29,6 +30,7 @@
                         data: null,
                         defaultContent: ''
                     },
+                    {data: 'client', name: 'client'},
                     {data: 'date', name: 'date'},
                     {data: 'totalPrice', name: 'totalPrice'},
                     {data: 'status', name: 'status'},

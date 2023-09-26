@@ -10,6 +10,7 @@ use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
 use Illuminate\Foundation\Application;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Yajra\DataTables\DataTables;
 
 class UserController extends Controller
@@ -29,7 +30,7 @@ class UserController extends Controller
         return view('user.index');
     }
 
-    public function getForDatatable(): JsonResponse
+    public function getForDatatable(Request $request): JsonResponse
     {
         $data = $this->userRepository->allUsersWithRoles();
 

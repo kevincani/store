@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Repositories\InventaryRepository;
 use App\Repositories\OrderRepository;
+use App\Repositories\UserRepository;
 use Carbon\Carbon;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Stripe\Refund;
 use Stripe\Stripe;
@@ -15,19 +17,28 @@ class OrderController extends Controller
     /** Deklarimi i repozitorit qe do te perdoret */
     protected OrderRepository $orderRepository;
     protected InventaryRepository $inventaryRepository;
-    public function __construct(OrderRepository $repository,InventaryRepository $inventaryRepository){
+    protected UserRepository $userRepository;
+    public function __construct(OrderRepository $repository,InventaryRepository $inventaryRepository,UserRepository $userRepository){
         $this->orderRepository = $repository;
         $this->inventaryRepository = $inventaryRepository;
+        $this->userRepository = $userRepository;
     }
 
     public function index(){
         return view('order.index');
     }
 
-    public function getForDatatable(){
-        // Te gjithe porosite e userit te loguar
+    public function getForDatatable(): JsonResponse
+    {
+        // Nqs eshte admin/manager shiko te gjitha porosite, perndryshe vetem te tijat
         $user = auth()->user();
-        $orders = $this->orderRepository->query()->where('user_id',$user->id)->with('orderDetails')->get();
+        if ($user->hasRole(['admin','manager'])) {
+            $orders = $this->orderRepository->query()->with('orderDetails')->get();
+        } else {
+            $orders = $this->orderRepository->query()->with('orderDetails')->where('user_id',$user->id)->get();
+        }
+
+
 
         //cdo detaj te produkteve te cdo orderi i kalojme ne array-n order
         foreach ($orders as $order){
@@ -35,6 +46,10 @@ class OrderController extends Controller
                 $id = $orderDetail->pivot_id;
                 $inventary = $this->inventaryRepository->fullInventary($id);
                 $orderDetail->product = $inventary;
+            }
+            if (!isset($order->client)){
+                $useri = $this->userRepository->find($order->user_id);
+                $order->client = $useri->first_name . " " . $user->last_name;
             }
         }
 
@@ -53,7 +68,13 @@ class OrderController extends Controller
                 return $status;
             })
             ->addColumn('action', function ($orders) {
-                $button = '<button type="button" id="'.$orders->id.'" name="refund" class="text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm px-5 py-2.5 text-center mr-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"></span>Refund</button>';
+                $user = auth()->user();
+                if ($user->hasRole(['admin','manager'])){
+                    $button = '<button type="button" id="'.$orders->id.'" name="refund" class="text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm px-5 py-2.5 text-center mr-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"></span>Refund</button>';
+                }
+                else{
+                    $button = '';
+                }
                 return $button;
             })
             ->make(true);
