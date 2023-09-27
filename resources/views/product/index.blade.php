@@ -4,7 +4,6 @@
 
         <link rel="stylesheet" href="{{Vite::asset('resources/assets/datatables.css')}}">
         <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-
         <script src="{{Vite::asset('resources/assets/jquery.js')}}"></script>
         <script src="{{Vite::asset('resources/assets/jquery-validate.js')}}"></script>
     @endsection
@@ -50,7 +49,10 @@
                                         <textarea id="desc" name="desc" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 h-24 resize-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" required></textarea>
                                     </div>
                                     </div>
-                                    <div id="foto">
+                                    <div>
+                                        <ul id="foto" class="items-center w-full text-sm font-medium text-gray-900 bg-white border border-gray-200 rounded-lg sm:flex dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+
+                                        </ul>
                                         <label for="image" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Image</label>
                                         <input type="file" id="images" name="images[]" multiple>
                                     </div>
@@ -157,7 +159,7 @@
                     actionUrl = "{{ route('product.store') }}";
                     $('#action').val('Add');
                     $('#productForm').trigger('reset');
-                    $('#foto').show();
+                    $('#foto').empty();
                     // $('#foto').attr('src', '').addClass('hidden');
                     modal.show();
                 })
@@ -204,6 +206,23 @@
                     var row = $(this).closest('tr');
                     var data = datatable.row(row).data();
 
+                    var fotoContainer = $('#foto');
+                    fotoContainer.empty();
+                    var images = data['image'];
+                    console.log(images);
+
+                    $.each(JSON.parse(images), function(index, imageName) {
+                        console.log(imageName.name);
+                        var imageUrl = "{{ asset('storage/') }}" + '/' + imageName.name;
+                        var imgElement = $('<div class="relative inline-block">' +
+                            '<img class="h-auto max-w-lg rounded-lg" width="120" height="300" src="' + imageUrl + '">' +
+                            '<div class="absolute top-0 right-0 p-2 bg-white rounded-full shadow">' +
+                            '<svg class="deleteImage w-2 h-2 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14" data-id="' + imageName.id + '">' +
+                            '<path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>' +
+                            '</svg></div</div>');
+                        fotoContainer.append(imgElement);
+                    });
+
                     $.each(data, function (index, value) {
                         $('#formContent #' + index).val(value).trigger('change')
                     })
@@ -212,13 +231,44 @@
                     actionUrl = "{{ route('product.update', ':productId') }}";
                     actionUrl = actionUrl.replace(':productId', productId);
 
-
-                    $('#foto').hide();
                     $('#action').val('Edit');
                     $('#actionButton').val('Update');
                     $('#actionButton').html('Update');
                     $('h3').html('Edit User');
                     modal.show();
+                });
+
+
+                $(document).on('click', '.deleteImage',function() {
+                    var id = $(this).data('id');
+                    console.log(id);
+
+                    var url = "{{ route('image.destroy','::id' ) }}";
+                    url = url.replace('::id',id);
+
+                    var imageContainer = $(this).closest('.relative');
+
+
+                    $.ajax({
+                        type:'delete',
+                        headers: {'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')},
+                        url:url,
+
+                        success:function(data)
+                        {
+                            imageContainer.remove();
+                        },
+                        error: function(response) {
+                            if(response.status==422){
+                                validator.showErrors(response.responseJSON.errors);
+                            }
+                            else
+                            {
+                                alert(response);
+                            }
+                        }
+                    });
+
                 });
 
 

@@ -23,9 +23,11 @@ Route::group(["middleware" => "auth"], function(){
 
     Route::middleware(['role:admin|manager'])->group(function (){
         Route::group(['prefix' => 'product', 'as'=> 'product.'], function (){
-            Route::get('product', 'ProductController@getForDatatable')->name('datatable');
+            Route::get('datatable', 'ProductController@getForDatatable')->name('datatable');
         });
         Route::resource('product', 'ProductController');
+
+        Route::resource('image', 'ImageController')->only('delete');
 
         Route::group(['prefix' => 'inventary', 'as'=> 'inventary.'], function (){
             Route::get('inventary', 'InventaryController@getForDatatable')->name('datatable');

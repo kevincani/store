@@ -55,9 +55,9 @@ class ProductController extends Controller
                             Delete</button>';
                 return $button;
             })
-//            ->addColumn('image', function ($products){
-//                return $products->images->first()->name;
-//            })
+            ->addColumn('image', function ($products){
+                return $products->images;
+            })
             ->make();
 
     }
@@ -117,4 +117,8 @@ class ProductController extends Controller
     {
         $this->productRepository->delete($product);
     }
+    /**
+     * Remove the photo from storage.
+     */
+
 }
