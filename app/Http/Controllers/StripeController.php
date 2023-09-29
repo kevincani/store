@@ -93,8 +93,8 @@ class StripeController extends Controller
             ],
             'customer_email' => $user->email,
             //Ne rast suksesi kalojme order dhe id e session ne routerin e suksesit
-            'success_url' => route('checkout.success', ['order' => $order->id]) . "?session_id={CHECKOUT_SESSION_ID}" ,
-            'cancel_url'  => route('checkout.cancel', ['order' => $order->id]),
+            'success_url' => route('checkout.status', ['status' => 'success', 'order' => $order->id]) . "?session_id={CHECKOUT_SESSION_ID}" ,
+            'cancel_url'  => route('checkout.status', ['status' => 'cancel', 'order' => $order->id]),
         ]);
         //Updatojme orderin me te id e session dhe cmimin total
         $this->orderRepository->update($order,[
@@ -106,12 +106,22 @@ class StripeController extends Controller
 
     }
 
+    public function handlePayment(Request $request,$status,Order $order){
+        if ($status == 'success'){
+            $checkoutSessionId = $request->get('session_id');
+            return $this->success($checkoutSessionId,$order);
+        }
+        else if ($status == 'cancel'){
+            return $this->cancel($order);
+        }
+        else{
+            abort(404);
+        }
+    }
 
-    public function success(Request $request,Order $order)
+    private function success($checkoutSessionId,Order $order)
     {
         Stripe::setApiKey(config('stripe.sk'));
-        //Id e sessionit
-        $checkoutSessionId = $request->get('session_id');
         //Marim te dhenat e sesionit me ane te Id
         $session = Session::retrieve($checkoutSessionId);
         // Updatojme orderin me payment_intent
@@ -133,7 +143,7 @@ class StripeController extends Controller
         return view('stripe.success');
     }
 
-    public function cancel(Request $request,Order $order)
+    private function cancel(Order $order)
     {
         //Ne rast se klienti heq dore fshijme orderin qe patem krijuar
         $this->orderRepository->delete($order);

@@ -56,8 +56,7 @@ Route::group(["middleware" => "auth"], function(){
         });
         Route::group(['prefix' => '/', 'as'=> 'checkout.'], function (){
             Route::post('session', 'StripeController@session')->name('session');
-            Route::get('success/{order}', 'StripeController@success')->name('success');
-            Route::get('cancel/{order}', 'StripeController@cancel')->name('cancel');
+            Route::get('{status}/{order}', 'StripeController@handlePayment')->name('status');
             Route::post('webhook', 'StripeController@handleWebhook')->name('webhook');
         });
 

@@ -23,11 +23,11 @@ class StoreInventaryRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'product_id' => 'required',
-            'color_id' => 'required',
-            'size_id' => 'required',
-            'discount_id' => 'required',
-            'category_id' => 'required',
+            'product_id' => 'required|exists:products,id',
+            'color_id' => 'required|exists:colors,id',
+            'size_id' => 'required|exists:sizes,id',
+            'discount_id' => 'required|exists:discounts,id',
+            'category_id' => 'required|exists:categories,id',
             'quantity' => 'required|integer',
             'price' => 'required|numeric',
         ];
