@@ -33,6 +33,24 @@ class ProductRepository extends BaseRepository
         }
     }
 
+    public function updateProductAndImg(Product $product,array $dataProduct,array $dataImage){
+        $this->update($product,$dataProduct);
+        /**
+         * Ruajme secilin imazh ne folderin 'public' dhe i fusim ne databaze
+         */
+        if (isset($dataImage['images'])){
+            foreach ($dataImage['images'] as $data){
+                $imageName = $data->getClientOriginalName();
+                $data->storeAs('public', $imageName);
+
+                $image = [
+                    'name' => $imageName,
+                    'product_id' => $product->id
+                ];
+                $this->ImageRepository->create($image);
+            }
+        }
+    }
 
 
 }

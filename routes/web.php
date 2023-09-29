@@ -16,7 +16,7 @@ Route::group(["middleware" => "auth"], function(){
         });
 
         Route::group(['prefix' => 'user', 'as'=> 'user.'], function (){
-            Route::get('user', 'UserController@getForDatatable')->name('datatable');
+            Route::get('datatable', 'UserController@getForDatatable')->name('datatable');
         });
         Route::resource('user', 'UserController')->except('create','show','edit');
     });
@@ -27,10 +27,10 @@ Route::group(["middleware" => "auth"], function(){
         });
         Route::resource('product', 'ProductController');
 
-        Route::resource('image', 'ImageController')->only('delete');
+        Route::resource('image', 'ImageController')->only('destroy');
 
         Route::group(['prefix' => 'inventary', 'as'=> 'inventary.'], function (){
-            Route::get('inventary', 'InventaryController@getForDatatable')->name('datatable');
+            Route::get('/datatable', 'InventaryController@getForDatatable')->name('datatable');
         });
         Route::resource('inventary', 'InventaryController');
     });

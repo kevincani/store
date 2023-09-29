@@ -23,7 +23,7 @@ class UpdateProductRequest extends FormRequest
     {
         return [
             'name' => 'string|max:255',
-            'description' => 'string|max:1000'
+            'desc' => 'string|max:1000'
         ];
     }
 }

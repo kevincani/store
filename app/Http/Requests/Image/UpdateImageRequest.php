@@ -23,7 +23,7 @@ class UpdateImageRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'image' => 'image|max:2048'
+            'images.*' => 'image|max:2048'
         ];
     }
 }

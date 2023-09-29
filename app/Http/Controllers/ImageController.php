@@ -69,5 +69,6 @@ class ImageController extends Controller
     public function destroy(Image $image)
     {
         $this->imageRepository->delete($image);
+        return response()->json(['message' => 'Product deleted successfully']);
     }
 }

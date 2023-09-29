@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Order;
 use App\Models\OrderDetail;
 use App\Models\Inventary;
+use App\Repositories\InventaryRepository;
+use App\Repositories\OrderDetailRepository;
+use App\Repositories\OrderRepository;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Stripe\Checkout\Session;
@@ -14,6 +17,15 @@ use Stripe\Webhook;
 
 class StripeController extends Controller
 {
+    protected OrderRepository $orderRepository;
+    protected OrderDetailRepository $orderDetailRepository;
+    protected InventaryRepository $inventaryRepository;
+    public function __construct(OrderRepository $orderRepository,OrderDetailRepository $orderDetailRepository,InventaryRepository $inventaryRepository){
+        $this->orderRepository = $orderRepository;
+        $this->orderDetailRepository = $orderDetailRepository;
+        $this->inventaryRepository = $inventaryRepository;
+    }
+
     public function session(Request $request){
         Stripe::setApiKey(config('stripe.sk'));
         //Array ku do fusim te dhenat dhe e vendosimne Stripe
@@ -25,7 +37,7 @@ class StripeController extends Controller
 
         $totalPrice = 0; //Inicializojme cmimin ne fiilim me 0
         //E krijome nje porosi ne databaze pa futur te dhenat e stripe
-        $order = Order::create([
+        $order = $this->orderRepository->create([
             'user_id' => $user->id,
             'payment_intent' => '',
             'total_price' => $totalPrice,
@@ -43,7 +55,7 @@ class StripeController extends Controller
             $totalPrice += $productPrice * $productQuantity;
 
             //Per cdo produkt qe ka orderi krijojme nje orderDetail qe mban karakteristikat e produkti dhe Id e orderit
-            OrderDetail::create([
+            $this->orderDetailRepository->create([
                 'order_id' => $order->id,
                 'pivot_id' => $inventary->id,
                 'quantity' => $inventary->quantity,
@@ -85,7 +97,7 @@ class StripeController extends Controller
             'cancel_url'  => route('checkout.cancel', ['order' => $order->id]),
         ]);
         //Updatojme orderin me te id e session dhe cmimin total
-        $order->update([
+        $this->orderRepository->update($order,[
             'total_price' => $totalPrice,
             'session_id' => $checkoutSession->id,
         ]);
@@ -103,29 +115,29 @@ class StripeController extends Controller
         //Marim te dhenat e sesionit me ane te Id
         $session = Session::retrieve($checkoutSessionId);
         // Updatojme orderin me payment_intent
-        $order->update([
-            'payment_intent' => $session->payment_intent,
+        $this->orderRepository->update($order,[
+        'payment_intent' => $session->payment_intent,
         ]);
+
         //Marim te gjitha tabelat orderDetail te orderit aktual sepse na duhen Id e inventarit te secilit produkt te sapo shitur
-        $orderDetails = OrderDetail::where('order_id', $order->id)->get();
+        $orderDetails = $this->orderDetailRepository->query()->where('order_id', $order->id)->get();
 
         //Ulim sasine ne secilin ineventar te produkteve te shitur
         foreach ($orderDetails as $orderDetail) {
-            $inventary = Inventary::find($orderDetail->pivot_id);
+            $inventary = $this->inventaryRepository->find($orderDetail->pivot_id);
             $newQuantity = $inventary->quantity - $orderDetail->quantity;
-            $inventary->update([
-               'quantity' => $newQuantity,
+            $this->inventaryRepository->update($inventary,[
+                'quantity' => $newQuantity,
             ]);
         }
-
-        return "Thanks for you order You have just completed your payment. The seller will reach out to you as soon as possible";
+        return view('stripe.success');
     }
 
     public function cancel(Request $request,Order $order)
     {
         //Ne rast se klienti heq dore fshijme orderin qe patem krijuar
-        $order->delete();
-        return " Canceled";
+        $this->orderRepository->delete($order);
+        return view('stripe.cancel');
     }
     public function handleWebhook(){
 
@@ -156,9 +168,9 @@ class StripeController extends Controller
         switch ($event->type) {
             case 'checkout.session.expired':
                 $seesion_id = $event->data->object->id;
-                $order = Order::where('session_id',$seesion_id )->first();
+                $order = $this->orderRepository->query()->where('session_id',$seesion_id )->first();
                 if ($order) {
-                    $order->delete();
+                    $this->orderRepository->delete($order);
                 }
 
             // ... handle other event types
