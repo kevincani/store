@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Validation\Rules\In;
 
 class Product extends Model
 {
@@ -32,9 +33,9 @@ class Product extends Model
     {
         return $this->hasMany(Image::class);
     }
-//    public function inventary()
-//    {
-//        return $this->hasMany(Inventary::class,'product_id','id');
-//    }
+    public function inventary()
+    {
+        return $this->belongsTo(Inventary::class , 'id','product_id');
+    }
 
 }

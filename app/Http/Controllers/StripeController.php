@@ -3,12 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\Order;
-use App\Models\OrderDetail;
-use App\Models\Inventary;
 use App\Repositories\InventaryRepository;
 use App\Repositories\OrderDetailRepository;
 use App\Repositories\OrderRepository;
 use Carbon\Carbon;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Stripe\Checkout\Session;
 use Stripe\Exception\SignatureVerificationException;
@@ -26,7 +25,8 @@ class StripeController extends Controller
         $this->inventaryRepository = $inventaryRepository;
     }
 
-    public function session(Request $request){
+    public function session(Request $request): JsonResponse
+    {
         Stripe::setApiKey(config('stripe.sk'));
         //Array ku do fusim te dhenat dhe e vendosimne Stripe
         $productItems = [];

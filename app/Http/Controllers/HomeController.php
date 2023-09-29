@@ -52,31 +52,29 @@ class HomeController extends Controller
         $searchQuery = $request->input('search'); // Get the search query
 
         // Ne array perfshijme ato produkte qe plotesojne kushtet e filtrave
-        $inventaries = $this->inventaryRepository->query()->with('products.images', 'colors', 'categories', 'discounts', 'sizes', 'products')
+        $products = $this->productRepository->query()->with('inventary')
             ->when($categoryId, function ($query, $categoryId) {
-                return $query->whereHas('categories', function ($query) use ($categoryId) {
+                return $query->whereHas('inventary', function ($query) use ($categoryId) {
                     $query->where('category_id', $categoryId);
                 });
             })
             ->when($sizeId, function ($query, $sizeId) {
-                return $query->whereHas('sizes', function ($query) use ($sizeId) {
+                return $query->whereHas('inventary', function ($query) use ($sizeId) {
                     $query->where('size_id', $sizeId);
                 });
             })
             ->when($searchQuery, function ($query, $searchQuery) {
-                return $query->whereHas('products', function ($query) use ($searchQuery) {
-                    $query->where('name', 'like', '%' . $searchQuery . '%');
-                });
+                $query->where('name', 'like', '%' . $searchQuery . '%');
             })
             ->paginate(3);
 
         // Kthejme response ne rast filtrash
         if ($request->ajax()) {
-            return view('home.productList', compact('inventaries', 'sizes', 'categories'));
+            return view('home.productList', compact('products', 'sizes', 'categories'));
         }
 
         //Kthejme response ne rast kalimi ne faqen tjeter prej paginimit
-        return view('home.index', compact('inventaries', 'sizes', 'categories'));
+        return view('home.index', compact('products', 'sizes', 'categories'));
     }
     public function viewDetails($id){
         // Qe qe te zgjedhe klienti ngjyren per produktin
